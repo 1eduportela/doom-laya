@@ -1,16 +1,2 @@
-# Entornos virtuales
 venv/
-env/
-
-# Archivos de Python
 __pycache__/
-*.pyc
-
-# Archivos pesados y multimedia
-models/*.pt
-models/*.bin
-outputs/*.mp4
-outputs/*.log
-
-# Archivos de entorno
-.env
