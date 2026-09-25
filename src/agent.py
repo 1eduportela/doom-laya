@@ -1,4 +1,5 @@
 import laya
+import time
 
 class DoomAgent:
     def __init__(self):
@@ -10,7 +11,7 @@ class DoomAgent:
             "Si tienes munición y un enemigo delante, dispara. "
             "Si te quedas sin munición o necesitas buscar, muévete a los lados."
         )
-        
+
         self.formato_respuesta = {
             "accion": {
                 "instructions": "¿Qué acción ejecuto?",
@@ -19,28 +20,40 @@ class DoomAgent:
             }
         }
 
+        # Memoria: (posicion, municion) -> accion
+        self.cache = {}
+
     def decidir_accion(self, estado_juego):
         if estado_juego is None:
             return 0
 
         municion_actual = estado_juego["municion"]
         posicion_enemigo = estado_juego["posicion_enemigo"]
-        
-        # --- NUEVO: La situación cambia dinámicamente en cada turno ---
+
+        clave = (posicion_enemigo, municion_actual)
+        if clave in self.cache:
+            return self.cache[clave]
+
         estado_completo = f"{self.contexto} Situación actual: Tienes {municion_actual} balas. {posicion_enemigo}"
-        
+
+        inicio = time.perf_counter()
         resultado = self.modelo.predict(
             state=estado_completo,
             questions=self.formato_respuesta
         )
-        
+        duracion = time.perf_counter() - inicio
+
         accion_elegida = resultado["answers"]["accion"]["choice"]
-        
+        print(f"   [LAYA pensó {duracion:.2f} s] {posicion_enemigo} -> {accion_elegida}")
+
         if accion_elegida == "IZQUIERDA":
-            return 0
+            accion = 0
         elif accion_elegida == "DERECHA":
-            return 1
+            accion = 1
         elif accion_elegida == "DISPARAR":
-            return 2
+            accion = 2
         else:
-            return 0
+            accion = 0
+
+        self.cache[clave] = accion
+        return accion

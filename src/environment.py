@@ -8,7 +8,6 @@ class DoomEnvironment:
         ruta_escenarios = os.path.join(os.path.dirname(vzd.__file__), "scenarios")
         self.game.load_config(os.path.join(ruta_escenarios, "basic.cfg"))
         
-        # --- NUEVO: Activamos la detección de objetos visuales ---
         self.game.set_labels_buffer_enabled(True)
         
         self.game.set_window_visible(False)
@@ -23,7 +22,7 @@ class DoomEnvironment:
 
     def ejecutar_accion(self, indice_accion):
         accion = self.acciones[indice_accion]
-        return self.game.make_action(accion)
+        return self.game.make_action(accion,4)
 
     def obtener_estado(self):
         estado = self.game.get_state()
