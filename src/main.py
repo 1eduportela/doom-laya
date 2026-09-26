@@ -4,7 +4,7 @@ from src.agente.agent import DoomAgent
 
 ESCENARIO = "defend_the_center"
 
-def main():
+def main(grabadora=None):
     print("---INICIANDO SISTEMA---")
     entorno = DoomEnvironment(ESCENARIO)
     agente = DoomAgent()
@@ -18,9 +18,20 @@ def main():
 
     while not entorno.esta_terminado():
         estado = entorno.obtener_estado()
+
+        if grabadora is not None:
+            estado_bruto = entorno.game.get_state()
+            imagen = estado_bruto.screen_buffer
+            # El audio de este estado es el sonido de la accion ANTERIOR
+            if turnos > 0:
+                grabadora.agregar_audio(estado_bruto.audio_buffer, entorno.ultimos_tics)
+
         accion = agente.decidir_accion(estado)
         recompensa = entorno.ejecutar_accion(accion)
         recompensa_total += recompensa
+
+        if grabadora is not None:
+            grabadora.agregar(imagen, repeticiones=entorno.ultimos_tics)
 
         # Leemos de nuevo DESPUES de actuar
         municion_despues, salud_despues = entorno.leer_variables()

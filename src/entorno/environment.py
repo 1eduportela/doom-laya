@@ -15,11 +15,16 @@ class DoomEnvironment:
         self.game.set_labels_buffer_enabled(True)
 
         self.game.set_window_visible(False)
+        self.game.set_render_hud(True)
+        self.game.set_audio_buffer_enabled(True)
+        self.game.set_audio_sampling_rate(vzd.SamplingRate.SR_22050)
+        self.game.set_audio_buffer_size(4)
         self.game.init()
         print("Motor de DOOM listo.")
 
         self.centro_pantalla = self.game.get_screen_width() / 2
         self.cerca_del_centro = False
+        self.ultimos_tics = 4
         self.tolerancia_min = 5
 
         self.acciones = [
@@ -33,6 +38,7 @@ class DoomEnvironment:
         # Giro fino (1 tic) si el enemigo esta cerca del centro; si no, 4 tics
         girando = indice_accion in (0, 1)
         tics = 1 if (girando and self.cerca_del_centro) else 4
+        self.ultimos_tics = tics
         return self.game.make_action(accion, tics)
 
     def leer_variables(self):
