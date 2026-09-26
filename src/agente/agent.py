@@ -1,10 +1,27 @@
 import laya
 import time
+from laya.onnx_agent import ONNXAgent
+
+# Elige el modelo: "original" o el nombre de un archivo models/laya_<nombre>.onnx
+# ("fp32", "int8", "int8_pc", "w8", "w8_acc4", ...)
+MODELO = "w8_acc4"
+
+# Opcion de LAYA -> accion del juego (0 = girar izq, 1 = girar der, 2 = disparar)
+ACCIONES = {
+    "IZQUIERDA": 0,
+    "DERECHA": 1,
+    "DISPARAR": 2,
+    "BUSCAR": 1,   # buscar = girar siempre hacia el mismo lado
+}
 
 class DoomAgent:
     def __init__(self):
-        print("Cargando cerebro...")
-        self.modelo = laya.load("convaiinnovations/laya")
+        print(f"Cargando cerebro ({MODELO})...")
+        if MODELO == "original":
+            self.modelo = laya.load("convaiinnovations/laya")
+        else:
+            self.modelo = ONNXAgent("convaiinnovations/laya", onnx_path=f"models/laya_{MODELO}.onnx")
+
         self.contexto = (
             "Eres un agente de IA jugando a DOOM. "
             "Tu objetivo es sobrevivir y eliminar la amenaza. "
@@ -16,7 +33,7 @@ class DoomAgent:
             "accion": {
                 "instructions": "¿Qué acción ejecuto?",
                 "type": "choice",
-                "criteria": ["IZQUIERDA", "DERECHA", "DISPARAR"]
+                "criteria": list(ACCIONES.keys())
             }
         }
 
@@ -46,14 +63,6 @@ class DoomAgent:
         accion_elegida = resultado["answers"]["accion"]["choice"]
         print(f"   [LAYA pensó {duracion:.2f} s] {posicion_enemigo} -> {accion_elegida}")
 
-        if accion_elegida == "IZQUIERDA":
-            accion = 0
-        elif accion_elegida == "DERECHA":
-            accion = 1
-        elif accion_elegida == "DISPARAR":
-            accion = 2
-        else:
-            accion = 0
-
+        accion = ACCIONES.get(accion_elegida, 0)
         self.cache[clave] = accion
         return accion
